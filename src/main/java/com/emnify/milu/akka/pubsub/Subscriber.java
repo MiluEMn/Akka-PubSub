@@ -29,8 +29,6 @@ public class Subscriber extends AbstractActor {
   @Override
   public void preStart() {
 
-    log.info("PreStart");
-
     ActorRef mediator = DistributedPubSub.get(getContext().system()).mediator();
     mediator.tell(new Subscribe(topic, getSelf()), getSelf());
   }
@@ -38,15 +36,11 @@ public class Subscriber extends AbstractActor {
   @Override
   public void postStop() {
 
-    log.info("PostStop");
-
     ActorRef mediator = DistributedPubSub.get(getContext().system()).mediator();
     mediator.tell(new Unsubscribe(topic, getSelf()), getSelf());
 
     peers.forEach((actorRef, aLong) -> log.info("First heard from {} at {}",
         actorRef, new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(aLong)));
-
-    log.info("Done with postStop");
   }
 
   public static Props props(String topic) {
