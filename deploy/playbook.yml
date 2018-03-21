@@ -1,0 +1,27 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: False
+  pre_tasks:
+    - raw: test -e /usr/bin/python || (apt-get -y update && apt-get install -y python)
+    - setup: #gather_facts
+  tasks:
+    - name: Install jdk and maven
+      apt:
+        name: "{{item}}"
+        state: installed
+        update_cache: yes
+      with_items:
+        - openjdk-8-jdk
+        - maven
+    - name: Clone the project from github
+      git:
+        repo: https://github.com/MiluEMn/Akka-PubSub.git
+        dest: /opt/pubsub
+    - name: Change owner to vagrant user
+      file:
+        path: /opt/pubsub
+        state: directory
+        recurse: yes
+        owner: vagrant
+        group: vagrant

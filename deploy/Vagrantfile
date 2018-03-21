@@ -1,0 +1,23 @@
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/xenial64"
+  config.ssh.forward_agent = true
+
+  config.vm.provider :virtualbox do |vb|
+    vb.linked_clone = true if Gem::Version.new(Vagrant::VERSION) >= Gem::Version.new('1.8.0')
+  end
+
+  (1..6).each do |i|
+    config.vm.define "node#{i}" do |box|
+      box.vm.hostname = "pubsub-node#{i}"
+      box.vm.network :private_network, ip: "10.99.99.#{50 + i}"
+      box.vm.provider :virtualbox do |vb|
+        vb.name = "pubsub-node#{i}"
+        vb.memory = 1024
+        vb.cpus = 1
+      end
+      box.vm.provision "ansible" do |ansible|
+        ansible.playbook = "playbook.yml"
+      end
+    end
+  end
+end
