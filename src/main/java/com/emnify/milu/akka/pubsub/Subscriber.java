@@ -3,7 +3,6 @@ package com.emnify.milu.akka.pubsub;
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.Props;
-import akka.cluster.pubsub.DistributedPubSub;
 import akka.cluster.pubsub.DistributedPubSubMediator.Subscribe;
 import akka.cluster.pubsub.DistributedPubSubMediator.SubscribeAck;
 import akka.cluster.pubsub.DistributedPubSubMediator.Unsubscribe;
@@ -17,11 +16,13 @@ import java.util.Map;
 public class Subscriber extends AbstractActor {
 
   private final LoggingAdapter log = Logging.getLogger(getContext().system(), this);
+  private ActorRef mediator;
   private Map<ActorRef, Long> peers;
   private String topic = "";
 
-  public Subscriber(String topic) {
+  public Subscriber(ActorRef mediator, String topic) {
 
+    this.mediator = mediator;
     this.topic = topic;
     peers = new HashMap<>();
   }
@@ -29,23 +30,20 @@ public class Subscriber extends AbstractActor {
   @Override
   public void preStart() {
 
-    ActorRef mediator = DistributedPubSub.get(getContext().system()).mediator();
     mediator.tell(new Subscribe(topic, getSelf()), getSelf());
   }
 
   @Override
   public void postStop() {
 
-    ActorRef mediator = DistributedPubSub.get(getContext().system()).mediator();
     mediator.tell(new Unsubscribe(topic, getSelf()), getSelf());
-
     peers.forEach((actorRef, aLong) -> log.info("First heard from {} at {}",
         actorRef, new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(aLong)));
   }
 
-  public static Props props(String topic) {
+  public static Props props(ActorRef mediator, String topic) {
 
-    return Props.create(Subscriber.class, topic);
+    return Props.create(Subscriber.class, mediator, topic);
   }
 
   @Override

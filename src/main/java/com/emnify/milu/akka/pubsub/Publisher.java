@@ -3,7 +3,6 @@ package com.emnify.milu.akka.pubsub;
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.Props;
-import akka.cluster.pubsub.DistributedPubSub;
 import akka.cluster.pubsub.DistributedPubSubMediator.Publish;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
@@ -15,18 +14,16 @@ public class Publisher extends AbstractActor {
 
   private final LoggingAdapter log = Logging.getLogger(getContext().system(), getSelf());
 
-  public static Props props(int nodeId, String topic) {
+  public static Props props(ActorRef mediator, int nodeId, String topic) {
 
-    return Props.create(Publisher.class, nodeId, topic);
+    return Props.create(Publisher.class, mediator, nodeId, topic);
   }
 
-  public Publisher(int nodeId, String topic) {
-
-    ActorRef mediator = DistributedPubSub.get(getContext().system()).mediator();
+  public Publisher(ActorRef mediator, int nodeId, String topic) {
 
     getContext().system().scheduler().schedule(
         Duration.Zero(),
-        Duration.create(2L, TimeUnit.SECONDS),
+        Duration.create(1L, TimeUnit.SECONDS),
         () -> mediator.tell(new Publish(topic, "Publisher #" + nodeId + ": Hi, guys!"), getSelf()),
         getContext().system().dispatcher()
     );
@@ -34,6 +31,7 @@ public class Publisher extends AbstractActor {
 
   @Override
   public Receive createReceive() {
+
     return receiveBuilder()
         .matchAny(event -> log.info("Unexpectedly got: {}", event))
         .build();
