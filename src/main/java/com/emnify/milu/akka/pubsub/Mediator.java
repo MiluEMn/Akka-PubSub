@@ -6,6 +6,8 @@ import akka.actor.Props;
 import akka.cluster.pubsub.DistributedPubSubMediator;
 import akka.cluster.pubsub.DistributedPubSubSettings;
 import scala.Function1;
+import scala.PartialFunction;
+import scala.runtime.BoxedUnit;
 
 public class Mediator extends DistributedPubSubMediator {
 
@@ -17,6 +19,13 @@ public class Mediator extends DistributedPubSubMediator {
   public Mediator(DistributedPubSubSettings settings) {
 
     super(settings);
+  }
+
+  @Override
+  public void aroundReceive(PartialFunction<Object, BoxedUnit> receive, Object message) {
+
+    log().info("Mediator got: {}", message);
+    super.aroundReceive(receive, message);
   }
 
   @Override
