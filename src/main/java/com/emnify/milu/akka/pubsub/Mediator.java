@@ -5,11 +5,15 @@ import akka.actor.Deploy;
 import akka.actor.Props;
 import akka.cluster.pubsub.DistributedPubSubMediator;
 import akka.cluster.pubsub.DistributedPubSubSettings;
+import akka.event.Logging;
+import akka.event.LoggingAdapter;
 import scala.Function1;
 import scala.PartialFunction;
 import scala.runtime.BoxedUnit;
 
 public class Mediator extends DistributedPubSubMediator {
+
+  private final LoggingAdapter log = Logging.getLogger(context().system(), this);
 
   public static Props props(DistributedPubSubSettings settings) {
 
@@ -24,7 +28,8 @@ public class Mediator extends DistributedPubSubMediator {
   @Override
   public void aroundReceive(PartialFunction<Object, BoxedUnit> receive, Object message) {
 
-    log().info("Mediator got: {}", message);
+    if(!message.toString().equals("GossipTick") && !message.toString().startsWith("Publish("))
+      log.info("Mediator got: {} / {}", message, message.toString());
     super.aroundReceive(receive, message);
   }
 

@@ -55,7 +55,7 @@ public class Subscriber extends AbstractActor {
           if (!peers.containsKey(getSender())) {
             peers.put(getSender(), System.currentTimeMillis());
           }
-          log.info("Got: {}", msg);
+          log.debug("Got: {}", msg);
         })
         .build();
   }
