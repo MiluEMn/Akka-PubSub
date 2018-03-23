@@ -21,8 +21,12 @@ public class Main {
     ActorRef mediator = system
         .actorOf(Mediator.props(DistributedPubSubSettings.create(system)), "mediator");
     system.actorOf(Publisher.props(mediator, nodeId, topic), "publisher" + nodeId);
+
+    System.out.println("Press ENTER to start subscriber");
+    System.in.read();
     system.actorOf(Subscriber.props(mediator, topic), "subscriber" + nodeId);
 
+    System.out.println("Press ENTER to shutdown");
     System.in.read();
     system.terminate();
   }

@@ -15,6 +15,7 @@ import java.util.Map;
 
 public class Subscriber extends AbstractActor {
 
+  private final SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS");
   private final LoggingAdapter log = Logging.getLogger(getContext().system(), this);
   private ActorRef mediator;
   private Map<ActorRef, Long> peers;
@@ -37,8 +38,9 @@ public class Subscriber extends AbstractActor {
   public void postStop() {
 
     mediator.tell(new Unsubscribe(topic, getSelf()), getSelf());
-    peers.forEach((actorRef, aLong) -> log.info("First heard from {} at {}",
-        actorRef, new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS").format(aLong)));
+    peers.keySet().stream()
+        .sorted()
+        .forEach(key -> log.info(key.path() + " -> " + sdf.format(peers.get(key))));
   }
 
   public static Props props(ActorRef mediator, String topic) {
@@ -55,7 +57,7 @@ public class Subscriber extends AbstractActor {
           if (!peers.containsKey(getSender())) {
             peers.put(getSender(), System.currentTimeMillis());
           }
-          log.debug("Got: {}", msg);
+          log.info("Got: {}", msg);
         })
         .build();
   }
