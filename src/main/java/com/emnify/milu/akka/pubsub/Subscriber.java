@@ -52,12 +52,15 @@ public class Subscriber extends AbstractActor {
 
     return receiveBuilder()
         .match(SubscribeAck.class, msg -> log.info("Successfully subscribed"))
-        .matchEquals(Object.class, msg -> msg.toString().equals("GossipTick"), msg -> currentTick++)
         .matchAny(msg -> {
-          if (!peers.containsKey(getSender())) {
-            peers.put(getSender(), currentTick);
+          if(msg.toString().equals("GossipTick")) {
+            currentTick++;
+          } else {
+            if (!peers.containsKey(getSender())) {
+              peers.put(getSender(), currentTick);
+            }
+            log.info("Got: {}", msg);
           }
-          log.info("Got: {}", msg);
         })
         .build();
   }

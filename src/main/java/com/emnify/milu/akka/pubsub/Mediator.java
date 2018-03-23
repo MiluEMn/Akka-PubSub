@@ -12,8 +12,6 @@ import scala.runtime.BoxedUnit;
 
 public class Mediator extends DistributedPubSubMediator {
 
-  private ActorRef subscriber;
-
   public static Props props(DistributedPubSubSettings settings) {
 
     return Props.create(Mediator.class, settings).withDeploy(Deploy.local());
@@ -27,8 +25,7 @@ public class Mediator extends DistributedPubSubMediator {
   @Override
   public void aroundReceive(PartialFunction<Object, BoxedUnit> receive, Object message) {
 
-    if (null == subscriber)
-      subscriber = context().system().actorFor("/user/subscriber");
+    ActorRef subscriber = context().system().actorFor("/user/subscriber");
 
     if (message.toString().equals("GossipTick"))
       subscriber.tell(message, ActorRef.noSender());
