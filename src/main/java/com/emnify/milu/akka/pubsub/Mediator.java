@@ -29,7 +29,7 @@ public class Mediator extends DistributedPubSubMediator {
   public void aroundReceive(PartialFunction<Object, BoxedUnit> receive, Object message) {
 
     if(!message.toString().equals("GossipTick") && !message.toString().startsWith("Publish("))
-      log.info("Mediator got: {} / {}", message, message.toString());
+      log.info("Mediator got: {}", message);
     super.aroundReceive(receive, message);
   }
 
