@@ -24,7 +24,7 @@ public class Main {
 
     System.out.println("Press ENTER to start subscriber");
     System.in.read();
-    system.actorOf(Subscriber.props(mediator, topic), "subscriber" + nodeId);
+    system.actorOf(Subscriber.props(mediator, topic), "subscriber");
 
     System.out.println("Press ENTER to shutdown");
     System.in.read();

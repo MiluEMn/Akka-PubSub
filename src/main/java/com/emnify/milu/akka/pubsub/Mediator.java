@@ -1,19 +1,18 @@
 package com.emnify.milu.akka.pubsub;
 
+import akka.actor.ActorRef;
 import akka.actor.Address;
 import akka.actor.Deploy;
 import akka.actor.Props;
 import akka.cluster.pubsub.DistributedPubSubMediator;
 import akka.cluster.pubsub.DistributedPubSubSettings;
-import akka.event.Logging;
-import akka.event.LoggingAdapter;
 import scala.Function1;
 import scala.PartialFunction;
 import scala.runtime.BoxedUnit;
 
 public class Mediator extends DistributedPubSubMediator {
 
-  private final LoggingAdapter log = Logging.getLogger(context().system(), this);
+  private ActorRef subscriber;
 
   public static Props props(DistributedPubSubSettings settings) {
 
@@ -28,8 +27,11 @@ public class Mediator extends DistributedPubSubMediator {
   @Override
   public void aroundReceive(PartialFunction<Object, BoxedUnit> receive, Object message) {
 
-    if(!message.toString().equals("GossipTick") && !message.toString().startsWith("Publish("))
-      log.debug("Mediator got: {}", message);
+    if (null == subscriber)
+      subscriber = context().system().actorFor("/user/subscriber");
+
+    if (message.toString().equals("GossipTick"))
+      subscriber.tell(message, ActorRef.noSender());
     super.aroundReceive(receive, message);
   }
 

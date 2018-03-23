@@ -9,16 +9,15 @@ import akka.cluster.pubsub.DistributedPubSubMediator.Unsubscribe;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 
-import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Subscriber extends AbstractActor {
 
-  private final SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS");
   private final LoggingAdapter log = Logging.getLogger(getContext().system(), this);
   private ActorRef mediator;
   private Map<ActorRef, Long> peers;
+  private long currentTick = 0L;
   private String topic = "";
 
   public Subscriber(ActorRef mediator, String topic) {
@@ -40,7 +39,7 @@ public class Subscriber extends AbstractActor {
     mediator.tell(new Unsubscribe(topic, getSelf()), getSelf());
     peers.keySet().stream()
         .sorted()
-        .forEach(key -> log.info(key.path() + " -> " + sdf.format(peers.get(key))));
+        .forEach(key -> log.info(key.path() + " -> " + peers.get(key)));
   }
 
   public static Props props(ActorRef mediator, String topic) {
@@ -53,9 +52,10 @@ public class Subscriber extends AbstractActor {
 
     return receiveBuilder()
         .match(SubscribeAck.class, msg -> log.info("Successfully subscribed"))
+        .matchEquals(Object.class, msg -> msg.toString().equals("GossipTick"), msg -> currentTick++)
         .matchAny(msg -> {
           if (!peers.containsKey(getSender())) {
-            peers.put(getSender(), System.currentTimeMillis());
+            peers.put(getSender(), currentTick);
           }
           log.info("Got: {}", msg);
         })

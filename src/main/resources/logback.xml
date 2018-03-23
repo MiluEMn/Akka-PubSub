@@ -5,9 +5,9 @@
     </encoder>
   </appender>
 
-  <logger name="com.emnify.milu.akka.pubsub" level="INFO" />
+  <logger name="com.emnify.milu.akka.pubsub" level="INFO"/>
 
-  <root level = "WARN">
-    <appender-ref ref="STDOUT" />
+  <root level="WARN">
+    <appender-ref ref="STDOUT"/>
   </root>
 </configuration>
